@@ -26,6 +26,8 @@ namespace LightMark_to_Yolo
 
         List<Markup> markupList = new List<Markup>();
         List<Rectangle> rectangleList = new List<Rectangle>();
+        List<string> classesList = new List<string>();
+
 
         string pathFolder;
         
@@ -178,6 +180,35 @@ namespace LightMark_to_Yolo
         private void TBoxHeight_Leave(object sender, EventArgs e)
         {
             SelectNode();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (!classesList.Contains(textBox1.Text))
+            {
+                checkedListBox1.Items.Add(textBox1.Text);
+                classesList.Add(textBox1.Text);
+            }
+            else
+            {
+                MessageBox.Show("Такой класс уже существует", "Внимение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            checkedListBox1.Items.Clear();
+        }
+
+        private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            checkedListBox1.Items.Remove(checkedListBox1.SelectedItem);
         }
     }
 
