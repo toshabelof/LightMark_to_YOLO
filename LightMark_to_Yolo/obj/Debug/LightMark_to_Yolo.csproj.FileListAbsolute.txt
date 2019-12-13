@@ -7,3 +7,13 @@ C:\Users\student\Desktop\LightMark_to_YOLO-master\LightMark_to_YOLO-master\Light
 C:\Users\student\Desktop\LightMark_to_YOLO-master\LightMark_to_YOLO-master\LightMark_to_Yolo\obj\Debug\LightMark_to_Yolo.csproj.GenerateResource.Cache
 C:\Users\student\Desktop\LightMark_to_YOLO-master\LightMark_to_YOLO-master\LightMark_to_Yolo\obj\Debug\LightMark_to_Yolo.exe
 C:\Users\student\Desktop\LightMark_to_YOLO-master\LightMark_to_YOLO-master\LightMark_to_Yolo\obj\Debug\LightMark_to_Yolo.pdb
+C:\Users\shado\Documents\Git_Repos\LightMark_to_YOLO\LightMark_to_Yolo\bin\Debug\LightMark_to_Yolo.exe.config
+C:\Users\shado\Documents\Git_Repos\LightMark_to_YOLO\LightMark_to_Yolo\bin\Debug\LightMark_to_Yolo.exe
+C:\Users\shado\Documents\Git_Repos\LightMark_to_YOLO\LightMark_to_Yolo\bin\Debug\LightMark_to_Yolo.pdb
+C:\Users\shado\Documents\Git_Repos\LightMark_to_YOLO\LightMark_to_Yolo\obj\Debug\LightMark_to_Yolo.csprojAssemblyReference.cache
+C:\Users\shado\Documents\Git_Repos\LightMark_to_YOLO\LightMark_to_Yolo\obj\Debug\LightMark_to_Yolo.Form1.resources
+C:\Users\shado\Documents\Git_Repos\LightMark_to_YOLO\LightMark_to_Yolo\obj\Debug\LightMark_to_Yolo.Properties.Resources.resources
+C:\Users\shado\Documents\Git_Repos\LightMark_to_YOLO\LightMark_to_Yolo\obj\Debug\LightMark_to_Yolo.csproj.GenerateResource.cache
+C:\Users\shado\Documents\Git_Repos\LightMark_to_YOLO\LightMark_to_Yolo\obj\Debug\LightMark_to_Yolo.csproj.CoreCompileInputs.cache
+C:\Users\shado\Documents\Git_Repos\LightMark_to_YOLO\LightMark_to_Yolo\obj\Debug\LightMark_to_Yolo.exe
+C:\Users\shado\Documents\Git_Repos\LightMark_to_YOLO\LightMark_to_Yolo\obj\Debug\LightMark_to_Yolo.pdb

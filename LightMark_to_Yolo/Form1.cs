@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -77,9 +78,11 @@ namespace LightMark_to_Yolo
             {
                 if (treeView1.SelectedNode != null)
                 {
-                    pictureBox1.Image = Image.FromFile(pathFolder + e.Node.FullPath);
+                    Bitmap bmp = (Bitmap)Image.FromFile(pathFolder + e.Node.FullPath);
+                    bmp = ResizeBitmap(bmp, pictureBox1.Width, pictureBox1.Height);
+                    pictureBox1.Image = bmp;
+
                     nodeSelecID = e.Node;
-                    Console.WriteLine(nodeSelecID.ToString());
                 }
             }
             catch (Exception ex)
@@ -88,25 +91,31 @@ namespace LightMark_to_Yolo
             }
         }
 
-        private void PictureBox1_Click(object sender, EventArgs e)
+        public Bitmap ResizeBitmap(Bitmap bmp, int width, int height)
         {
-            
+            Bitmap result = new Bitmap(width, height);
+            using (Graphics g = Graphics.FromImage(result))
+            {
+                g.DrawImage(bmp, 0, 0, width, height);
+            }
+
+            return result;
         }
+
 
         private void TBoxWidth_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!Char.IsDigit(e.KeyChar))
-            {
-                e.Handled = true;
-            }
+            if (Char.IsDigit(e.KeyChar)) { return; }    //Если нажат символ (не число)
+            if (Char.IsControl(e.KeyChar)) { return; }  //Если нажата клавиша контрол
+            e.Handled = true;
+            
         }
 
         private void TBoxHeight_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!Char.IsDigit(e.KeyChar))
-            {
-                e.Handled = true;
-            }
+            if (Char.IsDigit(e.KeyChar)) { return; }    //Если нажат символ (не число)
+            if (Char.IsControl(e.KeyChar)) { return; }  //Если нажата клавиша контрол
+            e.Handled = true;
         }
 
         private void PictureBox1_Paint(object sender, PaintEventArgs e)
@@ -133,7 +142,9 @@ namespace LightMark_to_Yolo
             }
 
             sizeRectangle = new Size(Convert.ToInt32(tBoxWidth.Text), Convert.ToInt32(tBoxHeight.Text));
-            rectangleList.Add(new Rectangle(e.Location, sizeRectangle));
+            Point point = new Point(e.Location.X - (int)(sizeRectangle.Width / 2), e.Location.Y - (int)(sizeRectangle.Height / 2));
+            
+            rectangleList.Add(new Rectangle(point, sizeRectangle));
             pictureBox1.Refresh();
         }
 
@@ -154,6 +165,17 @@ namespace LightMark_to_Yolo
                 return;
             }
 
+            Bitmap bmp1 = new Bitmap(pictureBox1.Image);
+
+            for (int i = 0; i < rectangleList.Count; ++i)
+            {
+                Bitmap bmp2 = bmp1.Clone(rectangleList[i], bmp1.PixelFormat);
+                Console.WriteLine(rectangleList[i].X);
+                Console.WriteLine(rectangleList[i].Y);
+                Console.WriteLine(rectangleList[i].Width);
+                Console.WriteLine(rectangleList[i].Height);
+                bmp2.Save(String.Concat("frame", i, ".jpg"), ImageFormat.Jpeg);
+            }
 
             SelectNode();
         }
@@ -184,33 +206,76 @@ namespace LightMark_to_Yolo
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (!classesList.Contains(textBox1.Text))
+            AddNewClasses();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            chekList_Classes.Items.Clear();
+        }
+
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            chekList_Classes.Items.Remove(chekList_Classes.SelectedItem);
+        }
+
+        private void Btn_ClassesClear_Click(object sender, EventArgs e)
+        {
+            chekList_Classes.Items.Clear();
+            classesList.Clear();
+        }
+
+
+        private void ChekList_Classes_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            for (int i = 0; i < chekList_Classes.Items.Count; ++i)
             {
-                checkedListBox1.Items.Add(textBox1.Text);
-                classesList.Add(textBox1.Text);
+                if (i != e.Index)
+                {
+                    chekList_Classes.SetItemChecked(i, false);
+                }
+            }
+        }
+
+        private void TBox_ClassesName_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true; //убирает звуковой сигнал при нажатии на Enter
+                AddNewClasses();
+            }
+        }
+
+        /// <summary>
+        /// Добавляет новый класс в chekedList и classesList, введенный в tBox_ClassesName
+        /// </summary>
+        private void AddNewClasses()
+        {
+            if (!classesList.Contains(tBox_ClassesName.Text))
+            {
+                chekList_Classes.Items.Add(tBox_ClassesName.Text);
+                classesList.Add(tBox_ClassesName.Text);
+                tBox_ClassesName.Focus();
+                tBox_ClassesName.SelectAll();
             }
             else
             {
                 MessageBox.Show("Такой класс уже существует", "Внимение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void Form1_Resize(object sender, EventArgs e)
         {
-            checkedListBox1.Items.Clear();
-        }
+            if (pictureBox1.Image == null) { return; }
 
-        private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-            checkedListBox1.Items.Remove(checkedListBox1.SelectedItem);
+            Bitmap bmp = (Bitmap)Image.FromFile(pathFolder + nodeSelecID.FullPath);
+            bmp = ResizeBitmap(bmp, pictureBox1.Width, pictureBox1.Height);
+            pictureBox1.Image = bmp;
         }
     }
+
+
 
     public static class MyExtension
     {
