@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -31,6 +32,9 @@ namespace LightMark_to_Yolo
 
 
         string pathFolder;
+        string NameFile;
+        int ClassesID;
+        bool SelectImage = false;
         
         
         private void btnOpenFolder_Click(object sender, EventArgs e)
@@ -76,6 +80,8 @@ namespace LightMark_to_Yolo
         {
             try
             {
+                pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+
                 if (treeView1.SelectedNode != null)
                 {
                     Bitmap bmp = (Bitmap)Image.FromFile(pathFolder + e.Node.FullPath);
@@ -83,6 +89,8 @@ namespace LightMark_to_Yolo
                     pictureBox1.Image = bmp;
 
                     nodeSelecID = e.Node;
+                    SelectImage = true;
+                    NameFile = e.Node.FullPath.Substring(0, e.Node.Text.IndexOf('.'));
                 }
             }
             catch (Exception ex)
@@ -164,19 +172,45 @@ namespace LightMark_to_Yolo
                 MessageBox.Show("Вы ничего не разметили.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+            if (classesList.Count == 0)
+            {
+                MessageBox.Show("Вы не создали ни одного класса.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            if (ClassesID == -1)
+            {
+                MessageBox.Show("Вы не выбрали класс обьекта.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            Console.WriteLine(ClassesID);
 
             Bitmap bmp1 = new Bitmap(pictureBox1.Image);
+            List<int> sumX = new List<int>();
+            List<int> sumY = new List<int>();
 
             for (int i = 0; i < rectangleList.Count; ++i)
             {
-                Bitmap bmp2 = bmp1.Clone(rectangleList[i], bmp1.PixelFormat);
-                Console.WriteLine(rectangleList[i].X);
-                Console.WriteLine(rectangleList[i].Y);
-                Console.WriteLine(rectangleList[i].Width);
-                Console.WriteLine(rectangleList[i].Height);
-                bmp2.Save(String.Concat("frame", i, ".jpg"), ImageFormat.Jpeg);
-            }
+                try
+                {
+                    Bitmap bmp2 = bmp1.Clone(rectangleList[i], bmp1.PixelFormat);
+                    SetGrayPixelBitmp(bmp2, bmp2);
+                    bmp2.Save(String.Concat(@"img\", NameFile, "_", ClassesID, "_", i, ".jpg"), ImageFormat.Jpeg);
 
+                    // Относительные кооридинаты
+                    double x = (rectangleList[i].Width / (double)2) / rectangleList[i].Width;
+                    double y = (rectangleList[i].Height / (double)2) / rectangleList[i].Height;
+                    double w = rectangleList[i].Width / rectangleList[i].Width;
+                    double h = rectangleList[i].Height / rectangleList[i].Height;
+
+                    using (StreamWriter sw = new StreamWriter(String.Concat(@"img\", NameFile, "_", ClassesID, "_", i, ".txt"), false, Encoding.Default))
+                    {
+                        sw.WriteLine(String.Concat(ClassesID, " ", x, " ", y, " ", w, " ", h).Replace(',', '.'));
+                    }
+                }
+                catch { }
+            }
+            GC.Collect();
             SelectNode();
         }
 
@@ -212,6 +246,22 @@ namespace LightMark_to_Yolo
         private void Form1_Load(object sender, EventArgs e)
         {
             chekList_Classes.Items.Clear();
+            pictureBox1.Image = Properties.Resources.Welcome;
+
+            String dir = @"img";
+            if (Directory.Exists(dir))
+            {
+                if (Directory.GetFiles(dir).Count() > 0)
+                {
+                    foreach (var file in Directory.GetFiles(dir))
+                    {
+                        File.Delete(file);
+                    }
+                }
+                Directory.Delete(dir);
+            }
+
+            Directory.CreateDirectory(dir);
         }
 
 
@@ -236,6 +286,8 @@ namespace LightMark_to_Yolo
                     chekList_Classes.SetItemChecked(i, false);
                 }
             }
+
+            ClassesID = e.Index;
         }
 
         private void TBox_ClassesName_KeyDown(object sender, KeyEventArgs e)
@@ -265,18 +317,74 @@ namespace LightMark_to_Yolo
             }
         }
 
+        /// <summary>
+        /// Конвертирует RGB Bitmap в GrayScale 
+        /// </summary>
+        /// <param name="bitmap">Исходный Bitmap RGB</param>
+        /// <param name="bitmapNew">Выходной Bitmap GrayScale</param>
+        private void SetGrayPixelBitmp(Bitmap bitmap, Bitmap bitmapNew)
+        {
+            Color p;
+
+            for (int y = 0; y < bitmap.Height; y++)
+            {
+                for (int x = 0; x < bitmap.Width; x++)
+                {
+                    //get pixel value
+                    p = bitmap.GetPixel(x, y);
+
+                    //extract pixel component ARGB
+                    int a = p.A;
+                    int r = p.R;
+                    int g = p.G;
+                    int b = p.B;
+
+                    //find average
+                    int avg = (r + g + b) / 3;
+
+                    //set new pixel value
+                    bitmap.SetPixel(x, y, Color.FromArgb(a, avg, avg, avg));
+                }
+            }
+
+            bitmapNew = (Bitmap)bitmap.Clone();
+        }
+
         private void Form1_Resize(object sender, EventArgs e)
         {
-            if (pictureBox1.Image == null) { return; }
+            if (!SelectImage) { return; }
 
-            Bitmap bmp = (Bitmap)Image.FromFile(pathFolder + nodeSelecID.FullPath);
-            bmp = ResizeBitmap(bmp, pictureBox1.Width, pictureBox1.Height);
-            pictureBox1.Image = bmp;
+            try
+            {
+                pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+                pictureBox1.Image = null;
+
+                if (treeView1.SelectedNode != null)
+                {
+                    Bitmap bmp = (Bitmap)Image.FromFile(pathFolder + nodeSelecID.FullPath);
+                    bmp = ResizeBitmap(bmp, pictureBox1.Width, pictureBox1.Height);
+                    pictureBox1.Image = bmp;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.StackTrace, "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            GC.Collect();
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (classesList.Count != 0)
+            {
+
+            }
         }
     }
 
 
-
+    // Класс с методми расширения
     public static class MyExtension
     {
         /// <summary>
